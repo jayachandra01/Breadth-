@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Breadth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday learning tool, calm and exact, like a good course reader
+   IDEA an architect's monograph: one big index card per topic, ruled notes, concrete planes
+   PICTURE today's topic card, large, with its resource stack; coverage bars across 8 pillars beside it
+   COLOUR white, black ink, concrete #d8d8d4 planes, safety yellow on the one primary action; night #1a1a19
+   TYPE Hanken Grotesk 800 for titles, Hanken Grotesk 400/500 for text
+   LAYOUT laptop: card 2/3 left, side column right; phone: title, card, side stacked */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#1a1a19);--ink:light-dark(#111111,#ededea);--mute:light-dark(#5c5c58,#a9a9a3);--plane:light-dark(#d8d8d4,#2b2b29);--soft:light-dark(#f1f1ee,#232321);--line:light-dark(#c9c9c4,#3a3a37);--yel:#ffe600;--yelink:#111;--bad:light-dark(#b3261e,#ff8a80)}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 "Hanken Grotesk",system-ui,sans-serif;overflow-x:clip}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:max(4vw,16px)}
+.top{background:var(--ink);color:var(--bg)}
+.top .wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-block:12px}
+.brand{font-weight:800;font-size:22px;letter-spacing:-.02em;margin-right:auto}
+.brand span{display:inline-block;width:12px;height:12px;background:var(--yel);margin-left:4px}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{background:none;border:0;color:var(--bg);opacity:.72;padding:10px 12px;min-height:44px;cursor:pointer;font-weight:600;border-radius:6px}
+nav button[aria-current=true]{opacity:1;background:color-mix(in srgb,var(--bg) 14%,transparent)}
+nav button:focus-visible,.btn:focus-visible,.seg button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
+main{padding-block:clamp(20px,3vw,40px)}
+h1{font-size:clamp(32px,4.4vw,48px);line-height:1.05;letter-spacing:-.02em;margin:6px 0 12px;font-weight:800;text-wrap:balance}
+h2{font-size:22px;line-height:1.2;margin:0 0 10px;font-weight:800;letter-spacing:-.01em}
+h3{font-size:16px;margin:0 0 8px;font-weight:700}
+.mute{color:var(--mute)}
+.small{font-size:14px}
+.today{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:24px;align-items:start}
+.card{border:1px solid var(--line);border-radius:10px;padding:clamp(18px,3vw,32px);background:var(--bg)}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px;color:var(--mute)}
+.tag{background:var(--ink);color:var(--bg);padding:3px 9px;border-radius:4px;font-weight:600;font-size:13px;white-space:nowrap}
+.tag.y{background:var(--yel);color:var(--yelink)}
+.hook{font-size:19px;font-weight:500;margin:0 0 14px}
+.note{background:var(--soft);border-left:4px solid var(--ink);padding:10px 14px;margin:12px 0;border-radius:0 6px 6px 0}
+.trail{font-size:14px;color:var(--mute);margin-top:8px}
+.trail button{background:none;border:0;padding:0;text-decoration:underline;cursor:pointer;color:inherit;font-size:14px}
+.res{list-style:none;margin:8px 0 0;padding:0;border-top:1px solid var(--line)}
+.res li{display:grid;grid-template-columns:9.5em minmax(0,1fr) auto;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.res .lab{font-size:13px;font-weight:700}
+.res .t{font-weight:600}
+.res .by{font-size:14px;color:var(--mute)}
+.res a.go{font-size:14px;font-weight:600;white-space:nowrap;padding:6px 10px;border:1px solid var(--line);border-radius:6px;text-decoration:none}
+.res a.go:hover{background:var(--soft)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.btn{min-height:44px;padding:10px 16px;border-radius:8px;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-weight:600}
+.btn:hover{background:var(--soft)}
+.btn.pri{background:var(--yel);color:var(--yelink);border-color:var(--yel)}
+.btn.ink{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.on{background:var(--ink);color:var(--bg)}
+.btn:disabled{opacity:.5;cursor:default}
+.side{display:grid;gap:16px}
+.panel{background:var(--soft);border-radius:10px;padding:18px}
+.big{font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.bars{display:grid;gap:8px;margin-top:6px}
+.bar{display:grid;grid-template-columns:7.5em minmax(0,1fr) 2em;gap:8px;align-items:center;font-size:14px}
+.track{height:10px;background:var(--plane);border-radius:5px;overflow:hidden}
+.fill{height:100%;background:var(--ink)}
+.bar.off{opacity:.4}
+.bar .n{text-align:right;font-variant-numeric:tabular-nums}
+.due{font-size:12px;font-weight:700;background:var(--yel);color:var(--yelink);padding:1px 6px;border-radius:3px;margin-left:4px}
+.mini{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.mini button{width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;min-height:44px}
+.mini button[aria-current=true]{border-color:var(--ink);box-shadow:inset 4px 0 0 var(--ink)}
+.mini b{display:block;font-size:15px}
+.mini span{font-size:13px;color:var(--mute)}
+.banner{background:var(--soft);border:1px solid var(--line);padding:12px 14px;border-radius:8px;margin-bottom:16px}
+   .linkbtn{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
+.banner.err{border-color:var(--bad);color:var(--bad)}
+.form{max-width:760px;display:grid;gap:22px}
+.field{display:grid;gap:6px}
+.field label,.lbl{font-weight:700}
+input[type=text],input[type=password],input[type=email],input[type=time],input[type=number],input[type=search],textarea,select{font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);min-height:44px;width:100%}
+textarea{min-height:90px;resize:vertical}
+.ptable{display:grid;gap:0;border-top:1px solid var(--line)}
+.prow{display:grid;grid-template-columns:minmax(0,1.3fr) auto auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.prow .pn{font-weight:600}
+.prow .pe{font-size:13px;color:var(--mute);font-weight:400}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:var(--bg);padding:8px 10px;min-height:40px;cursor:pointer;font-size:14px;font-weight:600}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.chk{display:inline-flex;gap:6px;align-items:center;min-height:44px;padding-right:8px}
+.chk input{width:20px;height:20px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(12em,1fr));gap:12px}
+.lib{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22em),1fr));gap:16px;margin-top:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(9em,1fr));gap:12px}
+.stat{background:var(--soft);border-radius:8px;padding:12px}
+.stat b{display:block;font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+.wk li{grid-template-columns:7.5em minmax(0,1fr) auto}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:s 1s linear infinite;vertical-align:-3px;margin-right:8px}
+@keyframes s{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.modal{position:fixed;inset:0;background:color-mix(in srgb,#000 50%,transparent);display:grid;place-items:center;padding:16px;z-index:9}
+.modal .card{max-width:420px}
+footer{padding-block:24px;font-size:13px;color:var(--mute)}
+@media (max-width:860px){.today{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:600px){.res li{grid-template-columns:minmax(0,1fr) auto}.res .lab{grid-column:1/-1}.prow{grid-template-columns:minmax(0,1fr)}nav button{padding:10px 8px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><div class="brand">Breadth<span></span></div><nav id="nav"></nav></div></header>
+<main class="wrap" id="app"><p class="mute"><span class="spin"></span>Loading…</p></main>
+<footer class="wrap">New drops arrive when you open Breadth. Your topics and key stay in this browser. Resource links open the source, or a search for that exact title and author.</footer>
+<script>
+{
+const PILLARS=[
+{id:'strategy',name:'Strategy & business models',short:'Strategy',ex:'Moats, platforms, unit economics'},
+{id:'finance',name:'Finance & accounting',short:'Finance',ex:'P&L, cash flow, valuation'},
+{id:'econ',name:'Economics & markets',short:'Economics',ex:'Rates, inflation, IPOs'},
+{id:'tech',name:'Technology & AI',short:'Tech & AI',ex:'LLMs, cloud, build vs buy'},
+{id:'growth',name:'Marketing, sales & growth',short:'Growth',ex:'Positioning, funnels, pricing'},
+{id:'ops',name:'Operations & product',short:'Ops & product',ex:'OKRs, PMF, prioritisation'},
+{id:'comms',name:'Communication & influence',short:'Communication',ex:'Pyramid principle, negotiation'},
+{id:'lead',name:'Leadership & personal effectiveness',short:'Leadership',ex:'Managing up, feedback, decisions'}];
+const W={off:0,light:1,normal:2,focus:3};
+const FOCUS_DEF=['strategy','finance','lead'];
+const LENS=`AUDIENCE LENS: Breadth is built for ambitious people heading toward the top of a company: future CEOs and general managers, founders, and MBA aspirants or students.
+- Topics: frame each one from the seat of the person accountable for the whole business. Favour what leaders actually decide and get judged on: capital allocation, strategy trade-offs, unit economics, fundraising and cap tables, pricing, org design and hiring, board and investor communication, negotiation, decision-making under uncertainty, and the core MBA curriculum taught through the case method. Avoid entry-level trivia and narrow functional how-tos.
+- "take" should sound like how a strong CEO, founder or investor would think about it.
+- Resources, in order of preference: HBS cases and HBR classics; shareholder and founder letters (e.g. Buffett, Bezos); operator books (e.g. High Output Management, The Outsiders, The Hard Thing About Hard Things, 7 Powers); YC and Paul Graham essays; McKinsey Quarterly; Stratechery; long-form operator podcasts (e.g. Acquired, Invest Like the Best); open courses from top business schools (MIT OpenCourseWare, Wharton or HBS Online). Use these only where they genuinely fit the topic.`;
+const LV={new:'new to it: explain from first principles, no jargon',some:'knows the basics: skip definitions, add mechanisms and examples',strong:'strong: go to nuance, numbers, live debates and trade-offs'};
+const FORMATS=['article','book','video','podcast','course'];
+const pById=id=>PILLARS.find(p=>p.id===id)||PILLARS[0];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dayKey=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+const weekKey=d=>{const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const n=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-n);const y=new Date(Date.UTC(t.getUTCFullYear(),0,1));return t.getUTCFullYear()+'-W'+Math.ceil(((t-y)/864e5+1)/7)};
+const fmtT=ts=>{const d=new Date(ts),n=new Date();const t=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});return dayKey(d)===dayKey(n)?'Today '+t:d.toLocaleDateString([],{month:'short',day:'numeric'})+', '+t};
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+
+const defProfile=()=>({goal:'',role:'',resume:'',pillars:Object.fromEntries(PILLARS.map(p=>[p.id,{w:FOCUS_DEF.includes(p.id)?'focus':'normal',lvl:'some'}])),cadence:'daily',time:'08:00',hStart:8,hEnd:21,maxPerDay:6,formats:{article:true,book:true,video:true,podcast:true,course:false}});
+const SAMPLE={id:'sample',sample:true,ts:Date.now(),pillar:'finance',title:'Why cash flow beats profit',hook:'How can a profitable company run out of money?',what:'Profit is an accounting result: revenue minus expenses, recognised when earned, not when paid. Cash flow is the money actually moving in and out. A fast-growing firm can book big profits while its cash sits in unpaid invoices and inventory, which is why many profitable companies still go bust.',why:'In any budget, pricing or growth conversation, asking "what does this do to cash?" marks you as someone who understands how the business really runs.',take:'Revenue is vanity, profit is sanity, cash is reality.',connection:'',resources:[{label:'Start here',type:'article',title:'Cash flow',creator:'Wikipedia',minutes:6,url:'https://en.wikipedia.org/wiki/Cash_flow',searchQuery:'Cash flow'},{label:'Best single read',type:'book',title:'Financial Intelligence (chapters on cash)',creator:'Karen Berman & Joe Knight',minutes:30,url:'',searchQuery:'Financial Intelligence Karen Berman Joe Knight'},{label:'Go deep',type:'book',title:'The Personal MBA',creator:'Josh Kaufman',minutes:300,url:'',searchQuery:'The Personal MBA Josh Kaufman'},{label:'Another angle',type:'essay',title:'Berkshire Hathaway shareholder letters on owner earnings',creator:'Warren Buffett',minutes:20,url:'',searchQuery:'Buffett owner earnings shareholder letter 1986'}],next:['Working capital and the cash conversion cycle','EBITDA and why critics distrust it'],saved:false,fb:null};
+
+let S={v:1,profile:null,drops:[],weekly:{},m:{res:0}};
+let view='today',cur=null,busy=false,busyMsg='',err='',info='',confirmReset=false,draft=null,libQ='';
+let KEY='',MODEL='',ready=false;const failed=new Set();let cands=[];const hasAI=()=>!!KEY;
+
+/* ---------- persistence ---------- */
+let writing=false,again=false;
+function trim(){const keep=S.drops.filter(d=>d.saved);const rest=S.drops.filter(d=>!d.saved).slice(-160);S.drops=[...keep,...rest].sort((a,b)=>a.ts-b.ts)}
+function save(){trim();try{localStorage.setItem('breadth.v1',JSON.stringify(S))}catch(e){err='Your browser blocked saving. Use Profile, Back up to keep a copy.'}}
+function setKey(k){KEY=(k||'').trim();try{KEY?localStorage.setItem('breadth.key',KEY):localStorage.removeItem('breadth.key')}catch(e){}}
+function setModel(m){MODEL=m||'';try{MODEL?localStorage.setItem('breadth.model',MODEL):localStorage.removeItem('breadth.model')}catch(e){}}
+async function load(){try{const raw=localStorage.getItem('breadth.v1');if(raw)S=Object.assign(S,JSON.parse(raw));KEY=localStorage.getItem('breadth.key')||'';MODEL=localStorage.getItem('breadth.model')||''}catch(e){info='This browser is not letting Breadth save data, so nothing will be remembered after you close it.'}ready=true}
+
+/* ---------- scheduling ---------- */
+function todaysScheduled(){const k=dayKey(new Date());return S.drops.filter(d=>d.scheduled&&dayKey(new Date(d.ts))===k).length}
+function dueCount(){const P=S.profile;if(!P)return 0;const now=new Date();const done=todaysScheduled();
+  if(P.cadence==='daily'){const [h,m]=(P.time||'08:00').split(':').map(Number);const at=new Date();at.setHours(h,m||0,0,0);return now>=at&&done===0?1:0}
+  const h=now.getHours();if(h<P.hStart||h>=P.hEnd||done>=P.maxPerDay)return 0;const last=S.drops.filter(d=>d.scheduled).slice(-1)[0];if(last){const l=new Date(last.ts);if(dayKey(l)===dayKey(now)&&l.getHours()===h)return 0}return 1}
+function nextText(){const P=S.profile;if(!P)return '';const now=new Date();const due=dueCount();if(due>0)return due===1?'A drop is ready':due+' drops are ready';
+  if(P.cadence==='daily'){const [h,m]=P.time.split(':').map(Number);const at=new Date();at.setHours(h,m||0,0,0);if(at<=now)at.setDate(at.getDate()+1);return 'Next drop '+(dayKey(at)===dayKey(now)?'today':'tomorrow')+' at '+at.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
+  const h=now.getHours();const done=todaysScheduled();if(h+1<P.hEnd&&done<P.maxPerDay&&h+1>=P.hStart){const at=new Date();at.setHours(h+1,0,0,0);return 'Next drop at '+at.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
+  return 'Next drop tomorrow at '+new Date(2000,0,1,P.hStart).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
+function coverage(days){const since=Date.now()-days*864e5;const c=Object.fromEntries(PILLARS.map(p=>[p.id,0]));S.drops.forEach(d=>{if(!d.sample&&d.ts>=since&&c[d.pillar]!=null)c[d.pillar]++});return c}
+function lastSeen(id){const ds=S.drops.filter(d=>d.pillar===id&&!d.sample);return ds.length?ds[ds.length-1].ts:0}
+function pickPillar(){const P=S.profile;const act=PILLARS.filter(p=>W[P.pillars[p.id].w]>0);if(!act.length)return PILLARS[0].id;
+  const overdue=act.filter(p=>Date.now()-lastSeen(p.id)>14*864e5);const recent=S.drops.slice(-2).map(d=>d.pillar);
+  const pool=overdue.filter(p=>!recent.includes(p.id));if(pool.length&&Math.random()<.6)return pool[Math.floor(Math.random()*pool.length)].id;
+  let best=null,bs=-1;act.forEach(p=>{const days=(Date.now()-(lastSeen(p.id)||Date.now()-30*864e5))/864e5;let s=W[P.pillars[p.id].w]*(1+Math.min(days,21)/7)*(.6+Math.random()*.8);if(recent[recent.length-1]===p.id)s*=.2;if(s>bs){bs=s;best=p.id}});return best}
+
+/* ---------- generation ---------- */
+function linkFor(r){if(r.url&&/^https:\/\/en\.wikipedia\.org\/wiki\//.test(r.url))return {href:r.url,direct:true};const q=encodeURIComponent(r.searchQuery||(r.title+' '+(r.creator||'')));return {href:(r.type==='video'?'https://www.youtube.com/results?search_query=':'https://www.google.com/search?q=')+q,direct:false}}
+const GAPI='https://generativelanguage.googleapis.com/v1beta';
+let busyDetail='',busyStart=0;const TIMEOUT=window.BREADTH_TIMEOUT||75000;
+function status(t){busyDetail=t;const el=document.getElementById('bstat');if(el)el.textContent=t}
+async function tfetch(u,o){const c=new AbortController();const t=setTimeout(()=>c.abort(),TIMEOUT);try{return await fetch(u,Object.assign({},o,{signal:c.signal}))}catch(e){throw {code:e&&e.name==='AbortError'?'timeout':'offline'}}finally{clearTimeout(t)}}
+async function listModels(){status('Finding a free Gemini model for your key…');const r=await tfetch(GAPI+'/models?pageSize=200',{headers:{'x-goog-api-key':KEY}});if(!r.ok)throw await apiErr(r);const j=await r.json();
+  const bad=/(image|tts|audio|live|embed|vision|thinking-exp|learnlm|gemma|aqa|veo|imagen|robotics|computer)/i;
+  const ids=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>String(m.name).replace(/^models\//,'')).filter(id=>id.startsWith('gemini')&&!bad.test(id)&&!failed.has(id));
+  const score=id=>(/flash/.test(id)?100:0)-(/lite/.test(id)?10:0)-(/(preview|exp)/.test(id)?20:0)+(parseFloat((id.match(/gemini-(\d+(?:\.\d+)?)/)||[])[1])||0);
+  return ids.sort((a,b)=>score(b)-score(a))}
+async function apiErr(r){const t=await r.text().catch(()=>'');if(/API_KEY_INVALID|API key not valid|API key expired/i.test(t))return {code:'badkey'};if(r.status===429)return {code:429,zero:/limit: ?0\b/.test(t)};return {code:r.status,body:t.slice(0,300)}}
+async function ask(prompt){if(!KEY)throw {code:'nokey'};
+  for(let attempt=0;attempt<6;attempt++){
+    if(!MODEL){if(!cands.length)cands=await listModels();if(!cands.length)throw {code:'nomodel'};setModel(cands.shift())}
+    status('Asking '+MODEL+(attempt?' (attempt '+(attempt+1)+')':'')+'…');let r;try{r=await tfetch(GAPI+'/models/'+encodeURIComponent(MODEL)+':generateContent',{method:'POST',headers:{'content-type':'application/json','x-goog-api-key':KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json',maxOutputTokens:8192}})})}catch(e){if(e.code==='timeout'&&attempt<1){status(MODEL+' is slow to reply, trying once more…');continue}throw e}
+    if(r.ok){const j=await r.json();const t=(((j.candidates||[])[0]||{}).content||{}).parts||[];const text=t.filter(p=>!p.thought).map(p=>p.text||'').join('');
+      const a=text.indexOf('{'),b=text.lastIndexOf('}');if(a<0||b<=a)continue;try{return JSON.parse(text.slice(a,b+1))}catch(e){continue}}
+    const e=await apiErr(r);if(e.code==='badkey')throw e;
+    if(e.code===404||e.code===403||(e.code===429&&e.zero)||e.code===400){status(MODEL+' is not available on your free tier, trying another model…');failed.add(MODEL);setModel('');continue}
+    if(e.code===429){if(attempt<1){status('Gemini rate limit hit, waiting a few seconds…');await new Promise(z=>setTimeout(z,4000));continue}throw e}
+    if(e.code>=500){await new Promise(z=>setTimeout(z,2000));continue}
+    throw e}
+  throw {code:'bad'}}
+function userBlock(){const P=S.profile;const fm=FORMATS.filter(f=>P.formats[f]).join(', ')||'articles and books';return `USER\nRole: ${P.role||'not given'}\nGoal: ${P.goal||'become a well-rounded business generalist'}\n${P.resume?'Background (resume excerpt): '+P.resume.slice(0,1500)+'\n':''}Preferred formats: ${fm}\nFocus pillars: ${PILLARS.filter(p=>P.pillars[p.id].w==='focus').map(p=>p.name).join(', ')||'none set'}`}
+async function generate(opts){
+  const P=S.profile;const parent=opts.parent?S.drops.find(d=>d.id===opts.parent):null;const pid=parent?parent.pillar:pickPillar();const pil=pById(pid);
+  const recent=S.drops.filter(d=>!d.sample&&d.ts>Date.now()-90*864e5).map(d=>d.title);const known=S.drops.filter(d=>d.fb==='know').map(d=>d.title).slice(-15);const liked=S.drops.filter(d=>d.fb==='more').map(d=>d.title).slice(-15);const disliked=S.drops.filter(d=>d.fb==='less').map(d=>d.title).slice(-15);const saved=S.drops.filter(d=>d.saved&&!d.sample).map(d=>d.title).slice(-25);
+  let trail=[];let x=parent;while(x){trail.unshift(x.title);x=x.parentId?S.drops.find(d=>d.id===x.parentId):null}
+  const prompt=`You write one "topic drop" for Breadth, an app that helps people in corporate jobs become credible business generalists across business, finance, tech, communication and leadership.
+
+${userBlock()}
+Level in this pillar: ${LV[P.pillars[pid].lvl]}
+
+${LENS}
+
+PILLAR: ${pil.name}
+${parent?`This is a "go deeper" follow-up. Trail so far: ${trail.join(' -> ')}. Suggested next ideas: ${(parent.next||[]).join('; ')}. Pick the most useful next topic that builds directly on the last one; it may sit in a neighbouring pillar, and set "pillar" accordingly.`:'Choose a specific, useful topic in this pillar that a professional should be able to discuss at work: a concept, framework, mechanism, metric or current debate. Not a vague theme.'}
+Do not repeat or closely overlap: ${recent.slice(-60).join('; ')||'none yet'}
+They found too basic: ${known.join('; ')||'none'}. They wanted more like: ${liked.join('; ')||'none'}. They wanted less like: ${disliked.join('; ')||'none'}.
+Saved topics (fill "connection" with one sentence linking to one of these only if the link is genuine, else ""): ${saved.join('; ')||'none'}
+
+RESOURCES: 4 or 5 real, well-known, human-made works. Only cite works you are certain exist: classic books, widely cited HBR or McKinsey articles, well-known essays, university or Coursera courses, famous talks, established podcasts. Never invent a title. Labels in this order: "Start here" (under 10 minutes), "Best single read", "Go deep" (book, course or long talk), "Another angle" (a critique or contrasting view), and "Listen or watch" only if the user likes podcasts or videos. url: an https://en.wikipedia.org/wiki/... link only when a Wikipedia article matches exactly, otherwise "". searchQuery: exact title plus creator.
+
+Return only JSON:
+{"pillar":"one of ${PILLARS.map(p=>p.id).join('|')}","title":"max 8 words","hook":"one curiosity question, max 15 words","what":"2-3 plain sentences explaining it","why":"one sentence on why it matters for this user specifically","take":"one crisp line worth remembering","connection":"","resources":[{"label":"","type":"article|book|video|podcast|course|essay|paper","title":"","creator":"","minutes":10,"url":"","searchQuery":""}],"next":["follow-up topic","follow-up topic"]}`;
+  const r=await ask(prompt);
+  if(!r||!r.title||!Array.isArray(r.resources))throw {code:'bad'};
+  const d={id:uid(),ts:Date.now(),pillar:PILLARS.some(p=>p.id===r.pillar)?r.pillar:pid,title:String(r.title),hook:String(r.hook||''),what:String(r.what||''),why:String(r.why||''),take:String(r.take||''),connection:String(r.connection||''),resources:r.resources.slice(0,5).map(x=>({label:String(x.label||''),type:String(x.type||'article'),title:String(x.title||''),creator:String(x.creator||''),minutes:Number(x.minutes)||0,url:String(x.url||''),searchQuery:String(x.searchQuery||'')})).filter(x=>x.title),next:Array.isArray(r.next)?r.next.map(String).slice(0,3):[],parentId:parent?parent.id:null,scheduled:!!opts.scheduled,saved:false,fb:null};
+  S.drops.push(d);cur=d.id;await save();return d}
+let tick=null;async function run(label,fn){if(busy)return;busy=true;busyMsg=label;busyDetail='';busyStart=Date.now();err='';render();tick=setInterval(()=>{const el=document.getElementById('btime');if(el)el.textContent=Math.round((Date.now()-busyStart)/1000)+'s'},1000);try{await fn()}catch(e){err=errText(e)}clearInterval(tick);busy=false;render()}
+function errText(e){const c=e&&e.code;return c==='nokey'?'Add your free Gemini API key in Profile to get topics.':c==='badkey'?'Gemini says this API key is not valid. Check it in Profile.':c===429?'Gemini free-tier limit reached for now. Try again in a minute, or tomorrow if the daily limit is used up.':c==='timeout'?'Gemini took too long to reply. Try again in a minute; the free tier is sometimes slow.':c==='offline'?'Could not reach Gemini. Check your internet connection, or whether your network blocks googleapis.com.':c==='nomodel'?'No usable Gemini model found for this key.':'Something went wrong picking a topic. Try again.'}
+async function deliverDue(){if(dueCount()>0&&hasAI())await run('Picking your next topic',()=>generate({scheduled:true}))}
+async function weekly(){const P=S.profile;const wk=weekKey(new Date());const cov=coverage(14);const neglected=PILLARS.filter(p=>W[P.pillars[p.id].w]>0).sort((a,b)=>cov[a.id]-cov[b.id])[0];
+  const prompt=`Build this week's reading list for Breadth, an app for business generalists.\n\n${userBlock()}\nLevels: ${PILLARS.map(p=>p.short+'='+P.pillars[p.id].lvl).join(', ')}\n\n${LENS}\n\nNeglected pillar lately: ${neglected?neglected.name:'none'}\nTopics they saved recently: ${S.drops.filter(d=>d.saved).map(d=>d.title).slice(-10).join('; ')||'none'}\n\nPick 6 items: one per focus pillar (or the most useful pillars if none are focused), one from the neglected pillar, and one book. Each a real, well-known, human-made work you are certain exists. Never invent titles. Mix lengths: some 15-30 minute reads, one long-form.\nReturn only JSON: {"items":[{"pillar":"one of ${PILLARS.map(p=>p.id).join('|')}","type":"article|book|video|podcast|course|essay|paper","title":"","creator":"","minutes":20,"why":"one sentence on why this, for this user","searchQuery":"exact title plus creator"}]}`;
+  const r=await ask(prompt);if(!r||!Array.isArray(r.items))throw {code:'bad'};S.weekly[wk]={ts:Date.now(),items:r.items.slice(0,7)};await save()}
+
+/* ---------- views ---------- */
+const NAV=[['today','Today'],['library','Library'],['week','This week'],['profile','Profile']];
+function renderNav(){document.getElementById('nav').innerHTML=S.profile?NAV.map(([k,l])=>`<button data-view="${k}" aria-current="${view===k}">${l}</button>`).join(''):''}
+function resItem(r,i,did){const L=linkFor(r);return `<li><span class="lab">${esc(r.label)}</span><span><span class="t">${esc(r.title)}</span><br><span class="by">${esc(r.creator)}${r.creator?' · ':''}${esc(r.type)}${r.minutes?' · '+(r.minutes>=120?Math.round(r.minutes/60)+' h':r.minutes+' min'):''}</span></span><a class="go" href="${esc(L.href)}" target="_blank" rel="noopener" data-res="${esc(did)}">${L.direct?'Open':'Find it'}</a></li>`}
+function dropCard(d){const p=pById(d.pillar);let trail=[];let x=d.parentId?S.drops.find(z=>z.id===d.parentId):null;while(x){trail.unshift(x);x=x.parentId?S.drops.find(z=>z.id===x.parentId):null}
+  const fb=(k,l)=>`<button class="btn ${d.fb===k?'on':''}" data-fb="${k}" ${d.sample?'disabled':''}>${l}</button>`;
+  return `<article class="card"><div class="meta"><span class="tag y">${esc(p.short)}</span><span>${d.sample?'Sample drop':esc(fmtT(d.ts))}</span>${d.parentId?'<span>· Go deeper</span>':''}</div>
+  ${trail.length?`<div class="trail">Trail: ${trail.map(t=>`<button data-open="${esc(t.id)}">${esc(t.title)}</button>`).join(' → ')} → <b>this</b></div>`:''}
+  <h1>${esc(d.title)}</h1><p class="hook">${esc(d.hook)}</p><p>${esc(d.what)}</p>
+  <p><b>Why it matters for you:</b> ${esc(d.why)}</p>${d.take?`<div class="note"><b>Worth remembering:</b> ${esc(d.take)}</div>`:''}
+  ${d.connection?`<p class="small mute"><b>Connects to what you saved:</b> ${esc(d.connection)}</p>`:''}
+  <h3 style="margin-top:20px">Resources</h3><ol class="res">${d.resources.map((r,i)=>resItem(r,i,d.id)).join('')}</ol>
+  <div class="actions"><button class="btn pri" data-deeper="${esc(d.id)}" ${busy||d.sample?'disabled':''}>Go deeper${d.next&&d.next[0]?': '+esc(d.next[0]):''}</button><button class="btn ${d.saved?'on':''}" data-save ${d.sample?'disabled':''}>${d.saved?'Saved':'Save'}</button></div>
+  <div class="actions" style="margin-top:8px">${fb('more','More like this')}${fb('less','Less like this')}${fb('know','Already know this')}</div></article>`}
+function today(){const P=S.profile;const real=S.drops.filter(d=>!d.sample);const d=S.drops.find(x=>x.id===cur)||real[real.length-1]||SAMPLE;const cov=coverage(14);const mx=Math.max(1,...Object.values(cov));const due=dueCount();
+  const k=dayKey(new Date());const todays=real.filter(x=>dayKey(new Date(x.ts))===k).slice().reverse();
+  const main=busy?`<article class="card"><p class="big"><span class="spin"></span>${esc(busyMsg)}…</p><p class="mute">Choosing a topic for your pillars and level, then gathering the best resources for it. This usually takes 15 to 40 seconds.</p><p class="small"><span id="bstat">${esc(busyDetail||'Starting…')}</span> · <span id="btime">${Math.round((Date.now()-busyStart)/1000)}s</span></p></article>`:dropCard(d);
+  return `${err?`<div class="banner err">${esc(err)}</div>`:''}${info?`<div class="banner">${esc(info)}</div>`:''}${!hasAI()&&ready?`<div class="banner">You're seeing a sample topic. Add your free Gemini API key in <button class="linkbtn" data-view="profile">Profile</button> to get your own.</div>`:''}
+  <div class="today"><section>${main}</section><aside class="side">
+  <div class="panel"><div class="big">${esc(nextText())}</div><p class="small mute" style="margin:6px 0 12px">${P.cadence==='daily'?'Daily at '+esc(P.time):'Hourly, '+P.hStart+':00 to '+P.hEnd+':00, up to '+P.maxPerDay+' a day'}</p>
+  <div class="row">${due>0?`<button class="btn ink" data-act="due" ${busy||!hasAI()?'disabled':''}>Open next drop</button>`:''}<button class="btn" data-act="surprise" ${busy||!hasAI()?'disabled':''}>New topic now</button></div></div>
+  <div class="panel"><h3>Pillar coverage, last 14 days</h3><div class="bars">${PILLARS.map(p=>{const w=P.pillars[p.id].w;const od=W[w]>0&&Date.now()-lastSeen(p.id)>14*864e5&&real.length>3;return `<div class="bar ${w==='off'?'off':''}"><span>${esc(p.short)}${od?'<span class="due">due</span>':''}</span><span class="track"><span class="fill" style="display:block;width:${cov[p.id]/mx*100}%"></span></span><span class="n">${cov[p.id]}</span></div>`}).join('')}</div></div>
+  ${todays.length?`<div class="panel"><h3>Today's drops</h3><ul class="mini">${todays.map(x=>`<li><button data-open="${esc(x.id)}" aria-current="${x.id===d.id}"><b>${esc(x.title)}</b><span>${esc(pById(x.pillar).short)} · ${esc(fmtT(x.ts))}</span></button></li>`).join('')}</ul></div>`:''}
+  </aside></div>`}
+function library(){const q=libQ.toLowerCase();const saved=S.drops.filter(d=>d.saved&&!d.sample&&(!q||(d.title+' '+d.what).toLowerCase().includes(q)));const all=S.drops.filter(d=>!d.sample);
+  const groups=PILLARS.map(p=>[p,saved.filter(d=>d.pillar===p.id)]).filter(g=>g[1].length);
+  return `<h1>Library</h1><p class="mute">${saved.length} saved of ${all.length} topics so far.</p><div class="field" style="max-width:420px"><label for="libq">Search saved topics</label><input type="search" id="libq" value="${esc(libQ)}" placeholder="e.g. valuation"></div>
+  ${groups.length?`<div class="lib">${groups.map(([p,ds])=>`<div class="panel"><h3>${esc(p.name)}</h3><ul class="mini">${ds.slice().reverse().map(d=>`<li><button data-open="${esc(d.id)}"><b>${esc(d.title)}</b><span>${esc(fmtT(d.ts))}</span></button></li>`).join('')}</ul></div>`).join('')}</div>`:`<div class="panel" style="margin-top:16px">${q?'No saved topics match that search.':'Nothing saved yet. Tap Save on any drop to keep it here with its resources.'}</div>`}
+  ${all.length?`<h2 style="margin-top:32px">History</h2><ul class="mini" style="max-width:760px">${all.slice().reverse().slice(0,40).map(d=>`<li><button data-open="${esc(d.id)}"><b>${esc(d.title)}</b><span>${esc(pById(d.pillar).short)} · ${esc(fmtT(d.ts))}${d.saved?' · saved':''}</span></button></li>`).join('')}</ul>`:''}`}
+function week(){const wk=weekKey(new Date());const w=S.weekly[wk];
+  return `${err?`<div class="banner err">${esc(err)}</div>`:''}<h1>This week's reading</h1><p class="mute" style="max-width:62ch">Six longer pieces for the week: one per focus pillar, one from a pillar you haven't touched lately, and one book.</p>
+  ${busy?`<p class="big"><span class="spin"></span>${esc(busyMsg)}…</p>`:w?`<ol class="res wk" style="max-width:900px">${w.items.map(r=>{const L=linkFor(r);return `<li><span class="lab">${esc(pById(r.pillar).short)}</span><span><span class="t">${esc(r.title)}</span><br><span class="by">${esc(r.creator)} · ${esc(r.type)}${r.minutes?' · '+(r.minutes>=120?Math.round(r.minutes/60)+' h':r.minutes+' min'):''}</span><br><span class="small">${esc(r.why)}</span></span><a class="go" href="${esc(L.href)}" target="_blank" rel="noopener" data-res="week">Find it</a></li>`}).join('')}</ol><div class="actions"><button class="btn" data-act="weekly" ${!hasAI()?'disabled':''}>Rebuild this week's list</button></div>`:`<div class="actions"><button class="btn pri" data-act="weekly" ${!hasAI()?'disabled':''}>Build this week's list</button></div>`}`}
+function profileForm(isNew){const P=draft;const seg=(name,opts,val,pid)=>`<span class="seg" role="group" aria-label="${esc(name)}">${opts.map(([k,l])=>`<button type="button" data-seg="${esc(name)}" data-pid="${pid||''}" data-val="${k}" aria-pressed="${val===k}">${l}</button>`).join('')}</span>`;
+  return `<form class="form" id="pf">${isNew?`<div><h1>Learn to think like a CEO, one topic at a time</h1><p class="mute" style="max-width:62ch">For future CEOs, founders and MBAs. Breadth sends you one well-chosen topic at a time across the eight pillars of running a business, each with the best cases, letters, books and talks to go deeper. Set it up in about two minutes. You'll need a free Gemini API key from aistudio.google.com/apikey.</p></div>`:'<h1>Profile</h1>'}
+  <div class="panel"><div class="field"><label for="apikey">Gemini API key (free)</label><input type="password" id="apikey" autocomplete="off" value="${esc(KEY)}" placeholder="Paste the key from aistudio.google.com/apikey"><span class="small mute">Saved only in this browser. Breadth sends it to Google, nowhere else.${MODEL?' Model in use: '+esc(MODEL)+'.':''}</span></div></div>
+  <div class="field"><label for="goal">What do you want to get better at, and why?</label><textarea id="goal" placeholder="e.g. Start my own company within five years, or get into a top MBA and move into general management">${esc(P.goal)}</textarea></div>
+  <div class="field"><label for="role">Your role and industry</label><input type="text" id="role" value="${esc(P.role)}" placeholder="e.g. Product associate at a B2B SaaS company"></div>
+  <div class="field"><label for="resume">Resume or LinkedIn summary (optional)</label><textarea id="resume" placeholder="Paste text here so topics skip what you already know">${esc(P.resume)}</textarea></div>
+  <div><div class="lbl">Your pillars</div><p class="small mute" style="margin:2px 0 8px">How much of each you want, and where you are today. Focus pillars come up about three times as often as light ones.</p><div class="ptable">${PILLARS.map(p=>`<div class="prow"><div class="pn">${esc(p.name)}<div class="pe">${esc(p.ex)}</div></div>${seg('w',[['off','Off'],['light','Light'],['normal','Normal'],['focus','Focus']],P.pillars[p.id].w,p.id)}${seg('lvl',[['new','New'],['some','Some'],['strong','Strong']],P.pillars[p.id].lvl,p.id)}</div>`).join('')}</div></div>
+  <div><div class="lbl">How often</div><div class="row" style="margin-top:6px">${seg('cadence',[['daily','Daily'],['hourly','Hourly']],P.cadence)}</div>
+  ${P.cadence==='daily'?`<div class="field" style="max-width:220px;margin-top:10px"><label for="time">Delivery time</label><input type="time" id="time" value="${esc(P.time)}"></div>`:`<div class="grid2" style="margin-top:10px;max-width:560px"><div class="field"><label for="hs">From (hour)</label><input type="number" id="hs" min="0" max="23" value="${P.hStart}"></div><div class="field"><label for="he">Until (hour)</label><input type="number" id="he" min="1" max="24" value="${P.hEnd}"></div><div class="field"><label for="mx">Max per day</label><input type="number" id="mx" min="1" max="12" value="${P.maxPerDay}"></div></div>`}</div>
+  <div><div class="lbl">Formats you like</div><div class="row">${FORMATS.map(f=>`<label class="chk"><input type="checkbox" data-fmt="${f}" ${P.formats[f]?'checked':''}>${f[0].toUpperCase()+f.slice(1)+'s'}</label>`).join('')}</div></div>
+  <div class="actions"><button class="btn pri" type="submit">${isNew?'Start my first drop':'Save changes'}</button></div></form>`}
+function profileView(){const all=S.drops.filter(d=>!d.sample);const st=[['Topics received',all.length],['Saved',all.filter(d=>d.saved).length],['Resources opened',S.m.res||0],['More like this',all.filter(d=>d.fb==='more').length],['Less like this',all.filter(d=>d.fb==='less').length],['Already knew',all.filter(d=>d.fb==='know').length]];
+  return `${info?`<div class="banner">${esc(info)}</div>`:''}${err?`<div class="banner err">${esc(err)}</div>`:''}${profileForm(false)}<h2 style="margin-top:40px">Your numbers</h2><div class="stats" style="max-width:760px">${st.map(([l,v])=>`<div class="stat"><b>${v}</b>${l}</div>`).join('')}</div>
+  <h2 style="margin-top:40px">Backup</h2><p class="small mute" style="max-width:62ch">Everything lives in this browser. Back up to a file to keep a copy or move to another device, then restore it there.</p><div class="actions"><button class="btn" data-act="backup">Back up to a file</button><label class="btn" for="restore" style="display:inline-flex;align-items:center">Restore from a file</label><input type="file" id="restore" accept="application/json,.json" hidden></div>
+  <div class="actions" style="margin-top:32px"><button class="btn" data-act="reset">Erase everything and start over</button></div>`}
+function render(){renderNav();const app=document.getElementById('app');if(!ready)return;
+  if(!S.profile){if(!draft)draft=defProfile();app.innerHTML=profileForm(true);return}
+  if(view==='profile'&&!draft)draft=JSON.parse(JSON.stringify(S.profile));
+  app.innerHTML=(view==='library'?library():view==='week'?week():view==='profile'?profileView():today())+(confirmReset?`<div class="modal"><div class="card"><h2>Erase everything?</h2><p>This removes your profile, every topic, your library and your weekly lists. It can't be undone.</p><div class="actions"><button class="btn ink" data-act="reset-yes">Erase</button><button class="btn" data-act="reset-no">Cancel</button></div></div></div>`:'')}
+
+/* ---------- events ---------- */
+function readForm(){const g=id=>document.getElementById(id);if(g('apikey')){const k=g('apikey').value.trim();if(k!==KEY){setKey(k);setModel('');failed.clear();cands=[]}}if(g('goal'))draft.goal=g('goal').value.trim();if(g('role'))draft.role=g('role').value.trim();if(g('resume'))draft.resume=g('resume').value.trim();if(g('time'))draft.time=g('time').value||'08:00';
+  if(g('hs')){let a=Math.max(0,Math.min(23,+g('hs').value||8)),b=Math.max(a+1,Math.min(24,+g('he').value||21));draft.hStart=a;draft.hEnd=b;draft.maxPerDay=Math.max(1,Math.min(12,+g('mx').value||6))}
+  document.querySelectorAll('[data-fmt]').forEach(c=>draft.formats[c.dataset.fmt]=c.checked)}
+function setView(v){view=v;err='';if(v==='profile')draft=JSON.parse(JSON.stringify(S.profile));else draft=null;try{history.replaceState(null,'','#'+v)}catch(e){location.hash=v}render();window.scrollTo(0,0)}
+document.addEventListener('click',async e=>{const t=e.target.closest('button,a');if(!t)return;
+  if(t.dataset.view){setView(t.dataset.view);return}
+  if(t.dataset.seg){readForm();const n=t.dataset.seg,v=t.dataset.val,pid=t.dataset.pid;if(pid)draft.pillars[pid][n]=v;else draft[n]=v;render();return}
+  if(t.dataset.res!=null){S.m.res=(S.m.res||0)+1;save();return}
+  if(t.dataset.open){cur=t.dataset.open;view='today';render();window.scrollTo(0,0);return}
+  const d=S.drops.find(x=>x.id===cur)||S.drops.filter(x=>!x.sample).slice(-1)[0];
+  if(t.dataset.deeper){if(t.dataset.deeper==='sample')return;const pid=t.dataset.deeper;run('Going deeper',()=>generate({parent:pid}));return}
+  if(t.hasAttribute('data-save')&&d){d.saved=!d.saved;render();save();return}
+  if(t.dataset.fb&&d){d.fb=d.fb===t.dataset.fb?null:t.dataset.fb;render();save();return}
+  const a=t.dataset.act;
+  if(a==='due')run('Picking your next topic',()=>generate({scheduled:true}));
+  if(a==='surprise')run('Picking a topic',()=>generate({scheduled:false}));
+  if(a==='weekly')run('Building your list',weekly);
+  if(a==='reset'){confirmReset=true;render()}
+  if(a==='backup'){const blob=new Blob([JSON.stringify({breadth:1,saved:Date.now(),state:S},null,1)],{type:'application/json'});const u=URL.createObjectURL(blob);const l=document.createElement('a');l.href=u;l.download='breadth-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);info='Backup downloaded.';render()}
+  if(a==='reset-no'){confirmReset=false;render()}
+  if(a==='reset-yes'){confirmReset=false;S={v:1,profile:null,drops:[],weekly:{},m:{res:0}};cur=null;draft=null;view='today';save();render()}
+});
+document.addEventListener('submit',async e=>{if(e.target.id!=='pf')return;e.preventDefault();readForm();const isNew=!S.profile;S.profile=JSON.parse(JSON.stringify(draft));info='';await save();
+  if(isNew){draft=null;view='today';render();if(hasAI())run('Picking your first topic',()=>generate({scheduled:true}));else render()}else{info='Saved. New drops will follow these settings.';render()}});
+document.addEventListener('change',async e=>{if(e.target.id!=='restore'||!e.target.files[0])return;try{const j=JSON.parse(await e.target.files[0].text());if(!j||!j.state||!Array.isArray(j.state.drops))throw 0;S=Object.assign({v:1,profile:null,drops:[],weekly:{},m:{res:0}},j.state);save();cur=null;draft=S.profile?JSON.parse(JSON.stringify(S.profile)):null;info='Restored '+S.drops.length+' topics from your backup.'}catch(_){err='That file is not a Breadth backup.'}render()});
+document.addEventListener('input',e=>{if(e.target.id==='libq'){libQ=e.target.value;const pos=e.target.selectionStart;render();const i=document.getElementById('libq');if(i){i.focus();try{i.setSelectionRange(pos,pos)}catch(_){}}}});
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(NAV.some(n=>n[0]===h)&&h!==view)setView(h)});
+const h0=location.hash.slice(1);if(NAV.some(n=>n[0]===h0))view=h0;
+
+(async()=>{await load();render();if(S.profile&&view==='today')deliverDue();
+  setInterval(()=>{if(S.profile&&!busy&&document.visibilityState==='visible'&&view==='today'){render()}},60000)})();
+}
+</script>
+</body>
+</html>
